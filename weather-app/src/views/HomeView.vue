@@ -1,12 +1,27 @@
 <script setup>
 import { ref } from 'vue';
 import axios from 'axios';
+import { useRouter } from 'vue-router';
 
 const searchQuery = ref("");
 const queryTimeout = ref(null);
 const mapAPIKEY = "Z1wSWDHus9R2befBxrFH";
 const mapSearchResults = ref(null);
 const searchError = ref(null);
+const router = useRouter();
+
+const previewCity = (searchResult) => {
+  console.log(searchResult);
+  const [city, state] = searchResult.place_name.split(",").map(x => x.replaceAll(" ", ""));
+  router.push({
+    path: `/cityView/${state}/${city}`,
+    query: {
+      lat: searchResult.geometry.coordinates[1],
+      lng: searchResult.geometry.coordinates[0],
+      preview: true,
+    }
+  });
+};
 
 const GetSearchresults = () => {
   clearTimeout(queryTimeout.value);
@@ -43,7 +58,8 @@ const GetSearchresults = () => {
           No results match your query, try a different term.
         </p>
         <template v-else>
-          <li v-for="searchResult in mapSearchResults" :key="searchResult.id" class="py-2 cursor-pointer">
+          <li v-for="searchResult in mapSearchResults" :key="searchResult.id" class="py-2 cursor-pointer"
+            @click="previewCity(searchResult)">
             {{ searchResult.place_name }}
           </li>
         </template>
